@@ -29,15 +29,21 @@ class User extends Authenticatable
         ];
     }
 
-    // Vartotojas turi daug kategorijų
+
     public function categories()
     {
         return $this->hasMany(Category::class);
     }
 
-    // Vartotojas turi daug transakcijų
+    
     public function transactions()
     {
         return $this->hasMany(Transaction::class);
     }
+
+    
+    public function budgets()
+{
+    return $this->hasMany(Budget::class);
+}
 }

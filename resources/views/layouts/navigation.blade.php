@@ -18,6 +18,12 @@
                     <x-nav-link :href="route('categories.index')" :active="request()->routeIs('categories.*')">
                         Kategorijos
                     </x-nav-link>
+                    <x-nav-link :href="route('budgets.index')" :active="request()->routeIs('budgets.*')">
+                        Biudžetas
+                    </x-nav-link>
+                    <x-nav-link :href="route('reports.index')" :active="request()->routeIs('reports.*')">
+                        Ataskaitos
+                    </x-nav-link>
                     <x-nav-link :href="route('settings.index')" :active="request()->routeIs('settings.*')">
                         Nustatymai
                     </x-nav-link>
@@ -38,7 +44,6 @@
                     </x-slot>
 
                     <x-slot name="content">
-                       
                         <form method="POST" action="{{ route('logout') }}">
                             @csrf
                             <x-dropdown-link :href="route('logout')"
@@ -73,6 +78,12 @@
             <x-responsive-nav-link :href="route('categories.index')" :active="request()->routeIs('categories.*')">
                 Kategorijos
             </x-responsive-nav-link>
+            <x-responsive-nav-link :href="route('budgets.index')" :active="request()->routeIs('budgets.*')">
+                Biudžetas
+            </x-responsive-nav-link>
+            <x-responsive-nav-link :href="route('reports.index')" :active="request()->routeIs('reports.*')">
+                Ataskaitos
+            </x-responsive-nav-link>
             <x-responsive-nav-link :href="route('settings.index')" :active="request()->routeIs('settings.*')">
                 Nustatymai
             </x-responsive-nav-link>
@@ -85,7 +96,6 @@
             </div>
 
             <div class="mt-3 space-y-1">
-            
                 <form method="POST" action="{{ route('logout') }}">
                     @csrf
                     <x-responsive-nav-link :href="route('logout')"
