@@ -23,6 +23,9 @@ class ReportController extends Controller
         if ($request->filled('type')) {
             $query->where('type', $request->type);
         }
+        if ($request->filled('category_id')) {
+            $query->where('category_id', $request->category_id);
+        }
 
         $transactions = $query->latest('date')->get();
 
@@ -37,11 +40,26 @@ class ReportController extends Controller
                 'min'   => $items->min('amount'),
                 'max'   => $items->max('amount'),
                 'avg'   => $items->avg('amount'),
+                'type'  => $items->first()->type,
             ];
         });
 
+        $byMonth = $transactions->groupBy(function ($t) {
+            return $t->date->format('Y-m');
+        })->map(function ($items) {
+            return [
+                'income'  => $items->where('type', 'income')->sum('amount'),
+                'expense' => $items->where('type', 'expense')->sum('amount'),
+                'balance' => $items->where('type', 'income')->sum('amount') - $items->where('type', 'expense')->sum('amount'),
+                'count'   => $items->count(),
+            ];
+        });
+
+        $categories = auth()->user()->categories()->get();
+
         return view('reports.index', compact(
-            'transactions', 'totalIncome', 'totalExpense', 'balance', 'byCategory', 'request'
+            'transactions', 'totalIncome', 'totalExpense', 'balance',
+            'byCategory', 'byMonth', 'categories', 'request'
         ));
     }
 
@@ -60,6 +78,9 @@ class ReportController extends Controller
         if ($request->filled('type')) {
             $query->where('type', $request->type);
         }
+        if ($request->filled('category_id')) {
+            $query->where('category_id', $request->category_id);
+        }
 
         $transactions = $query->latest('date')->get();
 
@@ -74,11 +95,24 @@ class ReportController extends Controller
                 'min'   => $items->min('amount'),
                 'max'   => $items->max('amount'),
                 'avg'   => $items->avg('amount'),
+                'type'  => $items->first()->type,
+            ];
+        });
+
+        $byMonth = $transactions->groupBy(function ($t) {
+            return $t->date->format('Y-m');
+        })->map(function ($items) {
+            return [
+                'income'  => $items->where('type', 'income')->sum('amount'),
+                'expense' => $items->where('type', 'expense')->sum('amount'),
+                'balance' => $items->where('type', 'income')->sum('amount') - $items->where('type', 'expense')->sum('amount'),
+                'count'   => $items->count(),
             ];
         });
 
         $pdf = Pdf::loadView('reports.pdf', compact(
-            'transactions', 'totalIncome', 'totalExpense', 'balance', 'byCategory', 'request'
+            'transactions', 'totalIncome', 'totalExpense', 'balance',
+            'byCategory', 'byMonth', 'request'
         ));
 
         return $pdf->download('ataskaita.pdf');
