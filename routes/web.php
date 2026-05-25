@@ -7,6 +7,7 @@ use App\Http\Controllers\SettingController;
 use App\Http\Controllers\BudgetController;
 use App\Http\Controllers\ReportController;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\CalendarController;
 
 Route::get('/', function () {
     return redirect()->route('dashboard');
@@ -22,6 +23,7 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/budgets', [BudgetController::class, 'store'])->name('budgets.store');
     Route::delete('/budgets/{budget}', [BudgetController::class, 'destroy'])->name('budgets.destroy');
     Route::get('/reports', [ReportController::class, 'index'])->name('reports.index');
+    Route::get('/calendar', [CalendarController::class, 'index'])->name('calendar.index');
     Route::get('/reports/pdf', [ReportController::class, 'pdf'])->name('reports.pdf');
 });
 

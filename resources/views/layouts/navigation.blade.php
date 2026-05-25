@@ -21,6 +21,9 @@
                     <x-nav-link :href="route('budgets.index')" :active="request()->routeIs('budgets.*')">
                         Biudžetas
                     </x-nav-link>
+                    <x-nav-link :href="url('/calendar')" :active="request()->routeIs('calendar.*')">
+                         Kalendorius
+                    </x-nav-link>
                     <x-nav-link :href="route('reports.index')" :active="request()->routeIs('reports.*')">
                         Ataskaitos
                     </x-nav-link>
@@ -80,6 +83,9 @@
             </x-responsive-nav-link>
             <x-responsive-nav-link :href="route('budgets.index')" :active="request()->routeIs('budgets.*')">
                 Biudžetas
+            </x-responsive-nav-link>
+            <x-responsive-nav-link :href="url('/calendar')" :active="request()->routeIs('calendar.*')">
+                Kalendorius
             </x-responsive-nav-link>
             <x-responsive-nav-link :href="route('reports.index')" :active="request()->routeIs('reports.*')">
                 Ataskaitos
