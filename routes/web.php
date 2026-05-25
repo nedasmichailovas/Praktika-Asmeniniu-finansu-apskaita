@@ -23,8 +23,9 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/budgets', [BudgetController::class, 'store'])->name('budgets.store');
     Route::delete('/budgets/{budget}', [BudgetController::class, 'destroy'])->name('budgets.destroy');
     Route::get('/reports', [ReportController::class, 'index'])->name('reports.index');
-    Route::get('/calendar', [CalendarController::class, 'index'])->name('calendar.index');
+    Route::get('/calendar', [CalendarController::class, 'index'])->name('calendar.index');  
     Route::get('/reports/pdf', [ReportController::class, 'pdf'])->name('reports.pdf');
+    Route::post('/reports/email', [ReportController::class, 'sendEmail'])->name('reports.email');
 });
 
 require __DIR__.'/auth.php';

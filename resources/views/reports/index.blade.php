@@ -5,6 +5,10 @@
 
     <div class="py-6 max-w-7xl mx-auto sm:px-6 lg:px-8">
 
+        @if(session('success'))
+            <div class="bg-green-100 text-green-800 p-3 rounded mb-4">{{ session('success') }}</div>
+        @endif
+
         <div class="bg-white p-6 rounded shadow mb-6">
             <form method="GET" action="{{ route('reports.index') }}" class="flex flex-wrap gap-4 items-end">
                 <div>
@@ -38,6 +42,23 @@
                 <a href="{{ route('reports.pdf', request()->query()) }}" class="bg-red-600 text-white px-4 py-2 rounded">
                     Atsisiųsti PDF
                 </a>
+            </form>
+        </div>
+
+        <div class="bg-white p-6 rounded shadow mb-6">
+            <h3 class="font-semibold mb-4">Siųsti ataskaitą el. paštu</h3>
+            <form method="POST" action="{{ route('reports.email', request()->query()) }}">
+                @csrf
+                <div class="flex gap-4 items-end">
+                    <div>
+                        <label class="block text-sm font-medium mb-1">El. paštas</label>
+                        <input type="email" name="email" class="border rounded px-3 py-2 w-72"
+                            value="{{ auth()->user()->email }}" placeholder="el.pastas@example.com">
+                    </div>
+                    <button type="submit" class="bg-green-600 text-white px-4 py-2 rounded">
+                        Siųsti PDF el. paštu
+                    </button>
+                </div>
             </form>
         </div>
 
