@@ -12,11 +12,14 @@ class DashboardController extends Controller
     {
         $user = auth()->user();
 
-        $totalIncome  = $user->transactions()->where('type', 'income')->sum('amount');
-        $totalExpense = $user->transactions()->where('type', 'expense')->sum('amount');
+        $selectedMonth = $request->get('selected_month', now()->month);
+        $selectedYear  = $request->get('selected_year', now()->year);
+
+        $totalIncome  = $user->transactions()->where('type', 'income')->whereMonth('date', $selectedMonth)->whereYear('date', $selectedYear)->sum('amount');
+        $totalExpense = $user->transactions()->where('type', 'expense')->whereMonth('date', $selectedMonth)->whereYear('date', $selectedYear)->sum('amount');
         $balance      = $totalIncome - $totalExpense;
 
-        $recentTransactions = $user->transactions()->with('category')->latest()->take(5)->get();
+        $recentTransactions = $user->transactions()->with('category')->whereMonth('date', $selectedMonth)->whereYear('date', $selectedYear)->latest()->take(5)->get();
 
         $thisMonthIncome  = $user->transactions()->where('type', 'income')->whereMonth('date', now()->month)->whereYear('date', now()->year)->sum('amount');
         $thisMonthExpense = $user->transactions()->where('type', 'expense')->whereMonth('date', now()->month)->whereYear('date', now()->year)->sum('amount');
@@ -43,10 +46,7 @@ class DashboardController extends Controller
             $dateTo   = now()->endOfDay();
         }
 
-        $lineTransactions = $user->transactions()
-            ->whereBetween('date', [$dateFrom, $dateTo])
-            ->orderBy('date')
-            ->get();
+        $lineTransactions = $user->transactions()->whereBetween('date', [$dateFrom, $dateTo])->orderBy('date')->get();
 
         $lineLabels  = [];
         $lineBalance = [];
@@ -68,12 +68,23 @@ class DashboardController extends Controller
             $current->addDay();
         }
 
+        $expenseByCategory = $user->transactions()
+            ->with('category')
+            ->where('type', 'expense')
+            ->whereMonth('date', $selectedMonth)
+            ->whereYear('date', $selectedYear)
+            ->get()
+            ->groupBy('category.name')
+            ->map(fn($items) => $items->sum('amount'));
+
         return view('dashboard', compact(
             'totalIncome', 'totalExpense', 'balance', 'recentTransactions',
             'thisMonthIncome', 'thisMonthExpense',
             'lastMonthIncome', 'lastMonthExpense',
             'lineLabels', 'lineBalance',
-            'compareMonth', 'compareYear', 'period'
+            'compareMonth', 'compareYear', 'period',
+            'selectedMonth', 'selectedYear',
+            'expenseByCategory'
         ));
     }
 }

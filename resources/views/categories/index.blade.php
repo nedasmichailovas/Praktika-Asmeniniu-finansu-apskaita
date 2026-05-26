@@ -4,9 +4,32 @@
     </x-slot>
 
     <div class="py-6 max-w-7xl mx-auto sm:px-6 lg:px-8">
-        <a href="{{ route('categories.create') }}" class="bg-blue-600 text-white px-4 py-2 rounded mb-4 inline-block">
-            + Nauja kategorija
-        </a>
+
+        <div class="bg-white p-6 rounded shadow mb-6">
+            <form method="GET" action="{{ route('categories.index') }}" class="flex flex-wrap gap-4 items-end">
+                <div>
+                    <label class="block text-sm font-medium mb-1">Paieška</label>
+                    <input type="text" name="search" class="border rounded px-3 py-2 w-48" placeholder="Pavadinimas..." value="{{ request('search') }}">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium mb-1">Tipas</label>
+                    <select name="type" class="border rounded px-3 py-2">
+                        <option value="">Visi</option>
+                        <option value="income" {{ request('type') === 'income' ? 'selected' : '' }}>Pajamos</option>
+                        <option value="expense" {{ request('type') === 'expense' ? 'selected' : '' }}>Išlaidos</option>
+                    </select>
+                </div>
+                <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded">Filtruoti</button>
+                <a href="{{ route('categories.index') }}" class="bg-gray-100 text-gray-600 px-4 py-2 rounded">Išvalyti</a>
+            </form>
+        </div>
+
+        <div class="flex justify-between items-center mb-4">
+            <a href="{{ route('categories.create') }}" class="bg-blue-600 text-white px-4 py-2 rounded">
+                + Nauja kategorija
+            </a>
+            <p class="text-sm text-gray-500">Rasta: {{ $categories->total() }}</p>
+        </div>
 
         @if(session('success'))
             <div class="bg-green-100 text-green-800 p-3 rounded mb-4">{{ session('success') }}</div>
@@ -44,5 +67,10 @@
                 </tbody>
             </table>
         </div>
+
+        <div class="mt-4">
+            {{ $categories->appends(request()->query())->links() }}
+        </div>
+
     </div>
 </x-app-layout>

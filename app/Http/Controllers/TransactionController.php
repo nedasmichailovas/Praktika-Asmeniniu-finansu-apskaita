@@ -8,17 +8,37 @@ use Illuminate\Http\Request;
 
 class TransactionController extends Controller
 {
-    public function index()
-    {
-        $transactions = auth()->user()->transactions()->with('category')->latest()->get();
-        return view('transactions.index', compact('transactions'));
-    }
+    public function index(Request $request)
+{
+    $user  = auth()->user();
+    $query = $user->transactions()->with('category');
 
-    public function create()
-    {
-        $categories = auth()->user()->categories()->get();
-        return view('transactions.create', compact('categories'));
+    if ($request->filled('date_from')) {
+        $query->where('date', '>=', $request->date_from);
     }
+    if ($request->filled('date_to')) {
+        $query->where('date', '<=', $request->date_to);
+    }
+    if ($request->filled('type')) {
+        $query->where('type', $request->type);
+    }
+    if ($request->filled('category_id')) {
+        $query->where('category_id', $request->category_id);
+    }
+    if ($request->filled('search')) {
+    $query->where(function($q) use ($request) {
+        $q->where('description', 'like', '%' . $request->search . '%')
+          ->orWhereHas('category', function($q) use ($request) {
+              $q->where('name', 'like', '%' . $request->search . '%');
+          });
+    });
+}
+
+    $transactions = $query->latest('date')->paginate(15);
+    $categories   = $user->categories()->get();
+
+    return view('transactions.index', compact('transactions', 'categories'));
+}
 
     public function store(Request $request)
     {
@@ -33,6 +53,12 @@ class TransactionController extends Controller
         auth()->user()->transactions()->create($request->all());
 
         return redirect()->route('transactions.index')->with('success', 'Įrašas pridėtas!');
+    }
+
+    public function create()
+    {
+        $categories = auth()->user()->categories()->get();
+        return view('transactions.create', compact('categories'));
     }
 
     public function edit(Transaction $transaction)

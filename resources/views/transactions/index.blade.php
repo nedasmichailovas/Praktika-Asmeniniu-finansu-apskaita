@@ -4,9 +4,51 @@
     </x-slot>
 
     <div class="py-6 max-w-7xl mx-auto sm:px-6 lg:px-8">
-        <a href="{{ route('transactions.create') }}" class="bg-blue-600 text-white px-4 py-2 rounded mb-4 inline-block">
-            + Naujas įrašas
-        </a>
+
+        <div class="bg-white p-6 rounded shadow mb-6">
+            <form method="GET" action="{{ route('transactions.index') }}" class="flex flex-wrap gap-4 items-end">
+                <div>
+                    <label class="block text-sm font-medium mb-1">Paieška</label>
+                    <input type="text" name="search" class="border rounded px-3 py-2 w-48" placeholder="Aprašymas..." value="{{ request('search') }}">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium mb-1">Nuo</label>
+                    <input type="date" name="date_from" class="border rounded px-3 py-2" value="{{ request('date_from') }}">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium mb-1">Iki</label>
+                    <input type="date" name="date_to" class="border rounded px-3 py-2" value="{{ request('date_to') }}">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium mb-1">Tipas</label>
+                    <select name="type" class="border rounded px-3 py-2">
+                        <option value="">Visi</option>
+                        <option value="income" {{ request('type') === 'income' ? 'selected' : '' }}>Pajamos</option>
+                        <option value="expense" {{ request('type') === 'expense' ? 'selected' : '' }}>Išlaidos</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium mb-1">Kategorija</label>
+                    <select name="category_id" class="border rounded px-3 py-2">
+                        <option value="">Visos</option>
+                        @foreach($categories as $category)
+                            <option value="{{ $category->id }}" {{ request('category_id') == $category->id ? 'selected' : '' }}>
+                                {{ $category->name }}
+                            </option>
+                        @endforeach
+                    </select>
+                </div>
+                <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded">Filtruoti</button>
+                <a href="{{ route('transactions.index') }}" class="bg-gray-100 text-gray-600 px-4 py-2 rounded">Išvalyti</a>
+            </form>
+        </div>
+
+        <div class="flex justify-between items-center mb-4">
+            <a href="{{ route('transactions.create') }}" class="bg-blue-600 text-white px-4 py-2 rounded">
+                + Naujas įrašas
+            </a>
+            <p class="text-sm text-gray-500">Rasta įrašų: {{ $transactions->total() }}</p>
+        </div>
 
         @if(session('success'))
             <div class="bg-green-100 text-green-800 p-3 rounded mb-4">{{ session('success') }}</div>
@@ -52,5 +94,10 @@
                 </tbody>
             </table>
         </div>
+
+        <div class="mt-4">
+            {{ $transactions->appends(request()->query())->links() }}
+        </div>
+
     </div>
 </x-app-layout>

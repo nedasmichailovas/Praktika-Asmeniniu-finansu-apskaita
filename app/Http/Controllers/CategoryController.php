@@ -7,11 +7,21 @@ use Illuminate\Http\Request;
 
 class CategoryController extends Controller
 {
-    public function index()
-    {
-        $categories = auth()->user()->categories()->latest()->get();
-        return view('categories.index', compact('categories'));
+    public function index(Request $request)
+{
+    $query = auth()->user()->categories();
+
+    if ($request->filled('type')) {
+        $query->where('type', $request->type);
     }
+    if ($request->filled('search')) {
+        $query->where('name', 'like', '%' . $request->search . '%');
+    }
+
+    $categories = $query->latest()->paginate(15);
+
+    return view('categories.index', compact('categories'));
+}
 
     public function create()
     {

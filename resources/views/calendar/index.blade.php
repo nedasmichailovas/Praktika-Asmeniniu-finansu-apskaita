@@ -9,7 +9,7 @@
             <form method="GET" action="{{ route('calendar.index') }}" class="flex gap-4 items-end">
                 <div>
                     <label class="block text-sm font-medium mb-1">Mėnuo</label>
-                    <select name="month" class="border rounded px-3 py-2">
+                    <select name="month" class="border rounded px-3 py-2 w-14      ">
                         @for($m = 1; $m <= 12; $m++)
                             <option value="{{ $m }}" {{ $m == $month ? 'selected' : '' }}>{{ $m }}</option>
                         @endfor
@@ -17,7 +17,7 @@
                 </div>
                 <div>
                     <label class="block text-sm font-medium mb-1">Metai</label>
-                    <select name="year" class="border rounded px-3 py-2">
+                    <select name="year" class="border rounded px-3 py-2 w-20    ">
                         @for($y = now()->year - 2; $y <= now()->year + 1; $y++)
                             <option value="{{ $y }}" {{ $y == $year ? 'selected' : '' }}>{{ $y }}</option>
                         @endfor

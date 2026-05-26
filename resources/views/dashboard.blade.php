@@ -5,6 +5,37 @@
 
     <div class="py-6 max-w-7xl mx-auto sm:px-6 lg:px-8">
 
+        <div class="bg-white p-4 rounded shadow mb-6">
+            <form method="GET" action="{{ route('dashboard') }}" class="flex flex-wrap gap-4 items-end">
+                <input type="hidden" name="period" value="{{ $period }}">
+                <input type="hidden" name="compare_month" value="{{ $compareMonth }}">
+                <input type="hidden" name="compare_year" value="{{ $compareYear }}">
+                <div>
+                    <label class="block text-sm font-medium mb-1">Mėnuo</label>
+                    <select name="selected_month" class="border rounded px-3 py-2 w-24">
+                        @for($m = 1; $m <= 12; $m++)
+                            <option value="{{ $m }}" {{ $m == $selectedMonth ? 'selected' : '' }}>{{ $m }}</option>
+                        @endfor
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium mb-1">Metai</label>
+                    <select name="selected_year" class="border rounded px-3 py-2 w-28">
+                        @for($y = now()->year - 3; $y <= now()->year; $y++)
+                            <option value="{{ $y }}" {{ $y == $selectedYear ? 'selected' : '' }}>{{ $y }}</option>
+                        @endfor
+                    </select>
+                </div>
+                <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded">Rodyti</button>
+                @if($selectedMonth != now()->month || $selectedYear != now()->year)
+                    <a href="{{ route('dashboard') }}" class="bg-gray-100 text-gray-600 px-4 py-2 rounded">Šis mėnuo</a>
+                @endif
+                <span class="text-sm text-gray-500 self-center">
+                    Rodoma: {{ $selectedYear }}-{{ str_pad($selectedMonth, 2, '0', STR_PAD_LEFT) }}
+                </span>
+            </form>
+        </div>
+
         <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
             <div class="bg-white p-6 rounded shadow text-center">
                 <p class="text-gray-500">Pajamos</p>
@@ -27,9 +58,11 @@
                 <h3 class="font-semibold">Šis mėnuo vs Pasirinktas mėnuo</h3>
                 <form method="GET" action="{{ route('dashboard') }}" class="flex gap-2 items-end">
                     <input type="hidden" name="period" value="{{ $period }}">
+                    <input type="hidden" name="selected_month" value="{{ $selectedMonth }}">
+                    <input type="hidden" name="selected_year" value="{{ $selectedYear }}">
                     <div>
                         <label class="block text-xs text-gray-500 mb-1">Lyginti su mėnesiu</label>
-                        <select name="compare_month" class="border rounded px-2 py-1 text-sm">
+                        <select name="compare_month" class="border rounded px-2 py-1 text-sm w-20">
                             @for($m = 1; $m <= 12; $m++)
                                 <option value="{{ $m }}" {{ $m == $compareMonth ? 'selected' : '' }}>{{ $m }}</option>
                             @endfor
@@ -37,7 +70,7 @@
                     </div>
                     <div>
                         <label class="block text-xs text-gray-500 mb-1">Metai</label>
-                        <select name="compare_year" class="border rounded px-2 py-1 text-sm">
+                        <select name="compare_year" class="border rounded px-2 py-1 text-sm w-24">
                             @for($y = now()->year - 3; $y <= now()->year; $y++)
                                 <option value="{{ $y }}" {{ $y == $compareYear ? 'selected' : '' }}>{{ $y }}</option>
                             @endfor
@@ -82,6 +115,8 @@
                 <form method="GET" action="{{ route('dashboard') }}" class="flex gap-2">
                     <input type="hidden" name="compare_month" value="{{ $compareMonth }}">
                     <input type="hidden" name="compare_year" value="{{ $compareYear }}">
+                    <input type="hidden" name="selected_month" value="{{ $selectedMonth }}">
+                    <input type="hidden" name="selected_year" value="{{ $selectedYear }}">
                     @foreach(['1month' => 'Šis mėnuo', '3months' => '3 mėn.', '6months' => '6 mėn.', '1year' => 'Metai'] as $val => $label)
                         <button type="submit" name="period" value="{{ $val }}"
                             class="px-3 py-1 rounded text-sm {{ $period === $val ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-600' }}">
@@ -95,13 +130,17 @@
 
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
             <div class="bg-white p-6 rounded shadow">
-                <h3 class="font-semibold mb-4">Išlaidos pagal kategorijas</h3>
-                <canvas id="pieChart"></canvas>
+                <h3 class="font-semibold mb-4">Išlaidos pagal kategorijas – {{ $selectedYear }}-{{ str_pad($selectedMonth, 2, '0', STR_PAD_LEFT) }}</h3>
+                @if($expenseByCategory->isEmpty())
+                    <p class="text-gray-400 text-sm">Išlaidų nėra</p>
+                @else
+                    <canvas id="pieChart"></canvas>
+                @endif
             </div>
 
             <div class="bg-white p-6 rounded shadow">
                 <div class="flex justify-between items-center mb-4">
-                    <h3 class="font-semibold">Paskutiniai įrašai</h3>
+                    <h3 class="font-semibold">Paskutiniai įrašai – {{ $selectedYear }}-{{ str_pad($selectedMonth, 2, '0', STR_PAD_LEFT) }}</h3>
                     <a href="{{ route('transactions.create') }}" class="bg-blue-600 text-white px-3 py-1 rounded text-sm">+ Naujas</a>
                 </div>
                 <table class="w-full text-sm">
@@ -133,16 +172,18 @@
 
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script>
+        @if(!$expenseByCategory->isEmpty())
         new Chart(document.getElementById('pieChart'), {
             type: 'doughnut',
             data: {
-                labels: {!! json_encode($recentTransactions->where('type','expense')->pluck('category.name')->values()) !!},
+                labels: {!! json_encode($expenseByCategory->keys()->values()) !!},
                 datasets: [{
-                    data: {!! json_encode($recentTransactions->where('type','expense')->pluck('amount')->values()) !!},
-                    backgroundColor: ['#3b82f6','#f59e0b','#ef4444','#8b5cf6','#10b981'],
+                    data: {!! json_encode($expenseByCategory->values()) !!},
+                    backgroundColor: ['#3b82f6','#f59e0b','#ef4444','#8b5cf6','#10b981','#f97316','#06b6d4'],
                 }]
             }
         });
+        @endif
 
         new Chart(document.getElementById('lineChart'), {
             type: 'line',
@@ -161,12 +202,7 @@
             options: {
                 plugins: { legend: { display: false } },
                 scales: {
-                    x: {
-                        ticks: {
-                            maxTicksLimit: 10,
-                            maxRotation: 45,
-                        }
-                    },
+                    x: { ticks: { maxTicksLimit: 10, maxRotation: 45 } },
                     y: { beginAtZero: false }
                 }
             }
